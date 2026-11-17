@@ -45,6 +45,7 @@
     "format:check": "prettier --check .",
     "test": "TZ=UTC vitest run",
     "test:coverage": "TZ=UTC vitest run --coverage",
+    "prepublishOnly": "npm run build",
     "release": "HUSKY=0 GITHUB_TOKEN=$(gh auth token) release-it --no-increment --no-git.commit",
     "release:prepare": "scripts/release-prepare.sh"
   },
