@@ -1,6 +1,8 @@
 # mannerly
 
 [![npm version](https://img.shields.io/npm/v/mannerly)](https://www.npmjs.com/package/mannerly)
+[![Build status](https://ci.appveyor.com/api/projects/status/k1ey1n5l7yifebtg/branch/main?svg=true)](https://ci.appveyor.com/project/lwojcik/mannerly/branch/main)
+[![codecov](https://codecov.io/github/lwojcik/mannerly/graph/badge.svg?token=gqdF5AFZ7l)](https://codecov.io/github/lwojcik/mannerly)
 
 A fetch client with good manners. It spaces out its requests, honours `Retry-After`, backs off when a server struggles, stops when it is blocked and tells you exactly what went wrong.
 
