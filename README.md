@@ -73,6 +73,17 @@ All of them are optional.
 | `maxRedirects`         | 5       | Redirect hops followed by hand.           |
 | `logBodyPreviewChars`  | 300     | How much of a bad body goes into the log. |
 
+## Options of a single request
+
+`http.get(url, options)` reads a page as text:
+
+| Option       | What it is                                                                                                                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `marker`     | A string the page must contain. A page without it (a maintenance page, a login wall) is an `UnexpectedPageError`, and the page must also end with `</html>`. Leave it out and neither check is made. |
+| `maxRetries` | Overrides the client's `maxRetries` for this request (0 means a single attempt).                                                                                                                     |
+
+`http.json(url, options)` reads JSON and takes `method` (`GET` or `POST`), `headers` (added to the client's), `body` and `maxRetries`. A body that is empty or not JSON is retried like a failed request.
+
 ## Remember a block
 
 `nextCooldown` turns repeated blocks into a growing pause you can store between runs:
@@ -125,7 +136,3 @@ npm run typecheck
 npm run lint
 npm run build
 ```
-
-## Licence
-
-[MIT](LICENSE)
