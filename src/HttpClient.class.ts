@@ -7,6 +7,7 @@ import { Pacer } from '@mannerly/pacer';
 import { Transport } from '@mannerly/transport';
 import {
   type ClientConfig,
+  type CompleteCheck,
   GET,
   type GetOptions,
   type HttpClientOptions,
@@ -19,6 +20,7 @@ import {
 } from '@mannerly/types';
 
 export type {
+  CompleteCheck,
   FetchLike,
   GetOptions,
   HttpClientOptions,
@@ -112,12 +114,14 @@ export class HttpClient {
     requestedPath,
     maxRetries,
     marker,
+    complete,
   }: {
     response: RawResponse;
     url: string;
     requestedPath: string;
     maxRetries: number;
     marker: string | undefined;
+    complete: CompleteCheck | undefined;
   }): Verdict<RawResponse> {
     const { settings } = this.options;
     const { body } = response;
@@ -144,6 +148,7 @@ export class HttpClient {
           url,
           response,
           marker,
+          complete,
         });
   }
 
@@ -164,6 +169,7 @@ export class HttpClient {
           requestedPath,
           maxRetries,
           marker: options.marker,
+          complete: options.complete,
         }),
     });
 

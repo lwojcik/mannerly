@@ -9,7 +9,11 @@ import {
   NotFoundError,
   UnexpectedPageError,
 } from '@mannerly/errors';
-import { HttpClient, type HttpSettings } from '@mannerly/HttpClient.class';
+import {
+  type GetOptions,
+  HttpClient,
+  type HttpSettings,
+} from '@mannerly/HttpClient.class';
 
 import { captureLogger } from './capture-logger';
 
@@ -434,6 +438,27 @@ describe('HttpClient', () => {
         })
       ).body,
     ).toBe(body);
+  });
+
+  it('judges completeness with a RegExp, a predicate, or not at all', async () => {
+    const feed = '<feed><entry>item-list</entry></feed>\n';
+    const url = 'https://example.org/feed.xml';
+    const get = (body: string, complete: GetOptions['complete']) =>
+      client([{ body: '', headers: cookies }, { body }]).http.get(url, {
+        marker: 'item-list',
+        complete,
+        maxRetries: 0,
+      });
+
+    expect((await get(feed, /<\/feed>\s*$/g)).body).toBe(feed);
+    expect((await get(feed, (body) => body.includes('</feed>'))).body).toBe(
+      feed,
+    );
+    expect((await get('<feed>item-list', false)).body).toBe('<feed>item-list');
+    await expect(get('<feed>item-list', /<\/feed>\s*$/)).rejects.toThrow(
+      'Truncated',
+    );
+    await expect(get(feed, undefined)).rejects.toThrow('Truncated');
   });
 
   it('skips the page checks when no marker is given', async () => {

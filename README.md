@@ -79,10 +79,11 @@ All of them are optional.
 
 `http.get(url, options)` reads a page as text:
 
-| Option       | What it is                                                                                                                                                                                           |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `marker`     | A string the page must contain. A page without it (a maintenance page, a login wall) is an `UnexpectedPageError`, and the page must also end with `</html>`. Leave it out and neither check is made. |
-| `maxRetries` | Overrides the client's `maxRetries` for this request (0 means a single attempt).                                                                                                                     |
+| Option       | What it is                                                                                                                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `marker`     | A string the page must contain. A page without it (a maintenance page, a login wall) is an `UnexpectedPageError`, and the page must also end with `</html>`. Leave it out and neither check is made.               |
+| `complete`   | With a `marker`, how to tell the body was not cut short: a RegExp the body must match (`/<\/feed>\s*$/` for Atom), a predicate `(body) => boolean`, or `false` to skip the check. Defaults to requiring `</html>`. |
+| `maxRetries` | Overrides the client's `maxRetries` for this request (0 means a single attempt).                                                                                                                                   |
 
 `http.json(url, options)` reads JSON and takes `method` (`GET` or `POST`), `headers` (added to the client's), `body` and `maxRetries`. A body that is empty or not JSON is retried like a failed request.
 

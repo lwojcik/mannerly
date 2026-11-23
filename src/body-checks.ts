@@ -2,9 +2,23 @@
 
 import { FetchError, UnexpectedPageError } from '@mannerly/errors';
 import type { MannerlyLogger } from '@mannerly/types';
-import type { RawResponse, Verdict } from '@mannerly/types';
+import type { CompleteCheck, RawResponse, Verdict } from '@mannerly/types';
 
 const COMPLETE_PAGE = /<\/html>\s*(?:<!--[\S\s]*?-->\s*)*$/i;
+
+const isComplete = (body: string, complete: CompleteCheck): boolean => {
+  if (complete === false) {
+    return true;
+  }
+
+  if (typeof complete === 'function') {
+    return complete(body);
+  }
+
+  complete.lastIndex = 0;
+
+  return complete.test(body);
+};
 
 interface CheckPageBodyOptions {
   logger: MannerlyLogger;
@@ -12,6 +26,7 @@ interface CheckPageBodyOptions {
   url: string;
   response: RawResponse;
   marker: string;
+  complete?: CompleteCheck;
 }
 
 export const checkPageBody = ({
@@ -20,6 +35,7 @@ export const checkPageBody = ({
   url,
   response,
   marker,
+  complete = COMPLETE_PAGE,
 }: CheckPageBodyOptions): Verdict<RawResponse> => {
   const { status, body } = response;
 
@@ -37,7 +53,7 @@ export const checkPageBody = ({
     };
   }
 
-  if (!COMPLETE_PAGE.test(body)) {
+  if (!isComplete(body, complete)) {
     logger.debug('page check failed: truncated', {
       preview: body.slice(-previewChars),
     });

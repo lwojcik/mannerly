@@ -54,8 +54,11 @@ export interface ClientConfig extends SiteHttpOptions {
   onRequest?: (at: number) => void;
 }
 
+export type CompleteCheck = RegExp | ((body: string) => boolean) | false;
+
 export interface GetOptions {
   marker?: string;
+  complete?: CompleteCheck;
   maxRetries?: number;
 }
 
