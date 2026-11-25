@@ -42,7 +42,7 @@ Every request waits at least `minRequestIntervalMs` (plus some jitter) after the
 - **Retries what is worth retrying.** Network errors, timeouts and 5xx or 429 answers are retried with exponential backoff, up to `maxRetries`.
 - **Honours `Retry-After`**, as seconds or as a date. A wait longer than `maxRetryAfterMs` is treated as a block, not waited out.
 - **Stops when blocked.** A 403 throws `BlockedError` at once, without retries.
-- **Sorts failures into typed errors**, all extending `ScrapeError`: `BlockedError`, `NotFoundError` (404 and 410), `FetchError`, `EmptyPageError`, `UnexpectedPageError`, `MovedError`, `DeadlineError`, `MalformedPageError`. Each carries the status, and, when there is one, the body of the page that failed.
+- **Sorts failures into typed errors**, all extending `ScrapeError`: `BlockedError`, `NotFoundError` (404 and 410), `FetchError`, `EmptyPageError`, `UnexpectedPageError`, `MovedError`, `DeadlineError`, `MalformedPageError`. Each carries the status, a `kind` string to `switch` on (`isKnownScrapeError(error)` narrows it), and, when there is one, the body of the page that failed.
 - **Checks the page it got.** With a `marker`, a page that lacks it (a maintenance page, a login wall, a homepage) is an `UnexpectedPageError`, and an HTML page that ends early is a `FetchError`.
 - **Follows redirects by hand**, so it can tell a redirect to a login page from a move you expect (`isMoved`).
 - **Keeps a session.** Cookies from every hop are stored and sent back; an empty first answer is treated as a session warm-up and retried.

@@ -7,4 +7,6 @@ import { ScrapeError } from '@mannerly/errors/ScrapeError';
  *
  * `status` is null for a network error.
  */
-export class FetchError extends ScrapeError {}
+export class FetchError extends ScrapeError {
+  override readonly kind = 'fetch';
+}

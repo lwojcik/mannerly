@@ -6,4 +6,6 @@ import { ScrapeError } from '@mannerly/errors/ScrapeError';
  * error: it is taken as a session warm-up and retried. This is thrown only
  * once those retries are used up.
  */
-export class EmptyPageError extends ScrapeError {}
+export class EmptyPageError extends ScrapeError {
+  override readonly kind = 'empty-page';
+}

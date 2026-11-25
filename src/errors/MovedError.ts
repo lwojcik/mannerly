@@ -5,6 +5,7 @@ import { ScrapeError } from '@mannerly/errors/ScrapeError';
  * Never retried. `newPath` is the path it ended on; update your stored URL.
  */
 export class MovedError extends ScrapeError {
+  override readonly kind = 'moved';
   newPath: string;
 
   constructor(newPath: string, status: number | null = null) {

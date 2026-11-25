@@ -6,4 +6,6 @@ import { ScrapeError } from '@mannerly/errors/ScrapeError';
  * Throw it from the `parse` callback of `crawlPages`, which then treats it like
  * a failed fetch and keeps the page body on the error for debugging.
  */
-export class MalformedPageError extends ScrapeError {}
+export class MalformedPageError extends ScrapeError {
+  override readonly kind = 'malformed-page';
+}
