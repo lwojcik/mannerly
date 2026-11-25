@@ -36,5 +36,5 @@ When you add a failure mode, decide which of the two it is, and document it in t
 - Coverage must stay at 100%; add tests with the code.
 - No runtime dependencies. Do not add any.
 - ESLint is strict and has rules against `let`, mutation and loops; where a loop or `let` is the right tool, the code uses a targeted `eslint-disable` with a reason. Follow that pattern, do not disable rules wholesale.
-- Commits and PR titles follow Conventional Commits (`feat:`, `fix:`, `chore:`...), enforced by commitlint and CI. Releases are cut by `release-it` from those messages, so do not edit `CHANGELOG` or the version by hand.
+- Commits and PR titles follow Conventional Commits (`feat:`, `fix:`, `chore:`...), enforced by commitlint and CI. Releases are cut by `release-it` from those messages, so do not edit `CHANGELOG` or the version by hand. Releases: `npm run release:prepare` opens the version PR; after it merges, `npm run release` tags and creates the GitHub release; pushing the tag triggers `.github/workflows/publish.yml`, which builds (via `prepublishOnly`) and publishes to npm with provenance via trusted publishing. Never publish from a laptop.
 - Do not make the client quicker or less polite by default. The defaults (2 s spacing, stop on 403) are the point of the package.
