@@ -1,6 +1,6 @@
 {
   "name": "mannerly",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A fetch client with good manners: it spaces out requests, honours Retry-After, backs off, stops when it is blocked and tells you what went wrong.",
   "keywords": [
     "fetch",
