@@ -5,6 +5,7 @@ import type {
   MannerlyLogger,
 } from '@mannerly/types';
 
+/** The defaults of every `HttpSettings` field. Spread it to derive your own: `{ ...DEFAULT_SETTINGS, maxRetries: 1 }`. */
 export const DEFAULT_SETTINGS: HttpSettings = {
   minRequestIntervalMs: 2000,
   requestJitterMs: 1000,

@@ -1,0 +1,76 @@
+# mannerly
+
+> A dependency-free fetch client with good manners, for Node 24+ (ESM, TypeScript). It spaces out requests, retries with exponential backoff, honours Retry-After, stops when blocked (403) and throws typed errors. Built for scrapers, feed builders and scheduled data pipelines.
+
+Install: `npm install mannerly`. Everything is exported from `mannerly`: `HttpClient`, `crawlPages`, `nextCooldown`, `DEFAULT_SETTINGS`, the error classes and their option/response types.
+
+## Quick start
+
+```ts
+import { HttpClient, BlockedError, NotFoundError, ScrapeError } from 'mannerly';
+
+// One client per site; reuse it so pacing and cookies are shared.
+const http = new HttpClient({
+  headers: { 'User-Agent': 'my-bot (+https://example.org/bot)' },
+});
+
+try {
+  const page = await http.get('https://example.org/events', {
+    marker: 'id="event-list"', // the page must contain this, else UnexpectedPageError
+  });
+  console.log(page.status, page.attempts, page.body.length);
+
+  const { data } = await http.json('https://example.org/api/events?page=1'); // data: unknown
+} catch (error) {
+  if (error instanceof BlockedError) {
+    // The site said stop. Do not retry now; back off for days (see nextCooldown).
+  } else if (error instanceof NotFoundError) {
+    // 404 or 410.
+  } else if (error instanceof ScrapeError) {
+    // Anything else mannerly throws, after retries ran out.
+  } else {
+    throw error;
+  }
+}
+```
+
+## API
+
+- `new HttpClient(options?)`: `headers`, `settings`, `isMoved(requestedPath, finalPath)`, `deadlineAt`, `lastRequestAt`, `onRequest(at)`, `logger`, and injectable `fetch`, `sleep`, `now`, `random` (use them in tests).
+- `http.get(url, { marker?, complete?, maxRetries? })` -> `{ url, finalUrl, status, body, bytes, durationMs, attempts }`. Reads text.
+- `http.json(url, { method?, headers?, body?, maxRetries? })` -> `{ url, status, data, bytes, durationMs, attempts }`. `data` is `unknown`; `body` must already be a string.
+- `http.requestCount`, `http.resetSession()`.
+- `crawlPages(options)` walks `?page=1,2,3...` until the list ends; returns `{ complete, incompleteReason, pages, failure }`.
+- `nextCooldown({ state: { blockStrikes }, now, days })` -> `{ blockedUntil, blockStrikes }`. Pure; you persist it.
+- `DEFAULT_SETTINGS`: `minRequestIntervalMs` 2000, `requestJitterMs` 1000, `requestTimeoutMs` 30000, `maxRetries` 3, `backoffBaseMs` 2000, `maxRetryAfterMs` 120000, `maxRedirects` 5, `logBodyPreviewChars` 300.
+
+## Errors
+
+All extend `ScrapeError` (`status: number | null`, `body: string | null`, `name` = class name).
+
+| Class                 | Thrown when                                                                                | Retried first? |
+| --------------------- | ------------------------------------------------------------------------------------------ | -------------- |
+| `BlockedError`        | 403, or a `Retry-After` longer than `maxRetryAfterMs`                                      | no             |
+| `NotFoundError`       | 404 or 410                                                                                 | no             |
+| `MovedError`          | a redirect that `isMoved` accepts; `newPath` has the target                                | no             |
+| `DeadlineError`       | the next wait would pass `deadlineAt`                                                      | no             |
+| `FetchError`          | network error, timeout, 5xx/429 or other non-2xx, truncated page, body that is not JSON    | yes            |
+| `UnexpectedPageError` | `marker` missing, or a redirect to another path that `isMoved` does not accept             | yes            |
+| `EmptyPageError`      | empty body again after a fresh session (a first empty answer is retried as a warm-up)      | yes            |
+| `MalformedPageError`  | not thrown by mannerly; you throw it from your `parse` callback in `crawlPages`            | n/a            |
+
+"Retried first" means retried up to `maxRetries` times with backoff, then the last error is thrown.
+
+## Rules of thumb
+
+- `marker` is how you detect a login wall or maintenance page. Without it, any 2xx page is accepted. With it, the body must also end with `</html>` unless you pass `complete` (a RegExp, a predicate, or `false`; e.g. `/<\/feed>\s*$/` for Atom).
+- Do not catch `BlockedError` and retry. Record it with `nextCooldown` and stop.
+- Await each call before starting the next on a client. Calls started together can skip the spacing.
+- Always send an identifying `User-Agent`. mannerly makes a client polite, it does not make a request welcome.
+- In tests, pass fake `fetch`, `sleep: async () => {}`, `now` and `random`.
+
+## Docs
+
+- [README](https://github.com/lwojcik/mannerly#readme): options, settings and examples
+- [Source and types](https://github.com/lwojcik/mannerly/tree/main/src): `types.ts` documents every option with its default
+- [Issues](https://github.com/lwojcik/mannerly/issues)

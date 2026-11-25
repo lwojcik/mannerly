@@ -33,10 +33,25 @@ export type {
   SiteHttpOptions,
 } from '@mannerly/types';
 
+/**
+ * A fetch client with good manners. It spaces out requests (across all calls on the
+ * same instance), retries what is worth retrying with exponential backoff, honours
+ * `Retry-After`, stops on a block, and throws typed `ScrapeError`s.
+ *
+ * Create one instance per site and reuse it, so pacing and cookies are shared.
+ * Make calls one after another (`await` each). Pacing is not locked, so calls
+ * started together on one client can fire at the same moment and skip the
+ * spacing.
+ *
+ * @example
+ * const http = new HttpClient({ headers: { 'User-Agent': 'my-bot (+https://example.org/bot)' } });
+ * const page = await http.get('https://example.org/events', { marker: 'id="event-list"' });
+ */
 export class HttpClient {
   private readonly options: ClientConfig;
   private readonly pacer: Pacer;
   private readonly transport: Transport;
+  /** How many times an empty first answer was retried as a session warm-up. */
   warmUps = 0;
 
   constructor(clientOptions: HttpClientOptions = {}) {
@@ -51,10 +66,12 @@ export class HttpClient {
     return this.options.logger;
   }
 
+  /** How many requests have been sent, retries and redirect hops included. */
   get requestCount() {
     return this.transport.requestCount;
   }
 
+  /** Forgets all stored cookies. */
   resetSession() {
     this.transport.jar.clear();
   }
@@ -152,6 +169,16 @@ export class HttpClient {
         });
   }
 
+  /**
+   * Reads a page as text.
+   *
+   * Retries network errors, timeouts, 5xx/429 answers, truncated pages and a missing `marker`
+   * up to `maxRetries` times, then throws the last error. Throws at once, without retrying,
+   * `BlockedError` (403, or a `Retry-After` over `maxRetryAfterMs`), `NotFoundError` (404, 410),
+   * `MovedError` and `DeadlineError`.
+   *
+   * @throws {ScrapeError} one of its subclasses; see each class for when it is thrown.
+   */
   async get(url: string, options: GetOptions = {}): Promise<PageResponse> {
     const { settings, now } = this.options;
     const maxRetries = options.maxRetries ?? settings.maxRetries;
@@ -184,6 +211,14 @@ export class HttpClient {
     };
   }
 
+  /**
+   * Reads JSON. `data` is `unknown`, so validate it before use.
+   *
+   * Retries and throws like `get()`. A body that is empty or not JSON is a `FetchError` and is retried.
+   * Unlike `get()`, it does no `marker` check.
+   *
+   * @throws {ScrapeError} one of its subclasses; see each class for when it is thrown.
+   */
   async json(url: string, options: JsonOptions = {}): Promise<JsonResponse> {
     const { settings, now } = this.options;
     const maxRetries = options.maxRetries ?? settings.maxRetries;
