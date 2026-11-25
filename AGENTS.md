@@ -28,7 +28,7 @@ The pre-commit hook runs `format:check`, `typecheck`, `lint` and `test`. Run the
 
 `HttpClient.get/json` -> `attemptLoop` (`attempts.ts`) -> `Transport.send` (pacing, cookies, manual redirects) -> `checkResponse` / `checkPageBody` return a verdict: a value, an error to retry (with an optional `retryAfter`), or `again`. A check that **throws** a `ScrapeError` (`BlockedError`, `NotFoundError`, `MovedError`, `DeadlineError`) ends the request without retries; a verdict error is retried with backoff and thrown when the retries run out.
 
-When you add a failure mode, decide which of the two it is, and document it in the error's JSDoc.
+When you add a failure mode, decide which of the two it is, and document it in the error's JSDoc. A new error class also needs a `kind` (add it to `ScrapeErrorKind`) and a place in the `KnownScrapeError` union.
 
 ## Conventions
 

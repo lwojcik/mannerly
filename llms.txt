@@ -7,7 +7,7 @@ Install: `npm install mannerly`. Everything is exported from `mannerly`: `HttpCl
 ## Quick start
 
 ```ts
-import { HttpClient, BlockedError, NotFoundError, ScrapeError } from 'mannerly';
+import { HttpClient, BlockedError, NotFoundError, ScrapeError } from 'mannerly'; // or switch on error.kind, see Errors
 
 // One client per site; reuse it so pacing and cookies are shared.
 const http = new HttpClient({
@@ -46,7 +46,22 @@ try {
 
 ## Errors
 
-All extend `ScrapeError` (`status: number | null`, `body: string | null`, `name` = class name).
+All extend `ScrapeError` (`status: number | null`, `body: string | null`, `name` = class name, and `kind`, a fixed string per class).
+
+To branch on the failure, use `isKnownScrapeError(error)` and then `switch (error.kind)`; TypeScript narrows each case to its class. `kind` is `'blocked'`, `'deadline'`, `'empty-page'`, `'fetch'`, `'malformed-page'`, `'moved'`, `'not-found'` or `'unexpected-page'` (a plain `ScrapeError` is `'scrape'`).
+
+```ts
+if (isKnownScrapeError(error)) {
+  switch (error.kind) {
+    case 'blocked':
+      return backOff(); // do not retry now
+    case 'moved':
+      return update(error.newPath);
+    default:
+      return skip();
+  }
+}
+```
 
 | Class                 | Thrown when                                                                                | Retried first? |
 | --------------------- | ------------------------------------------------------------------------------------------ | -------------- |

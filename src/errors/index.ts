@@ -3,6 +3,7 @@ export * from '@mannerly/errors/DeadlineError';
 export * from '@mannerly/errors/describe-failure';
 export * from '@mannerly/errors/EmptyPageError';
 export * from '@mannerly/errors/FetchError';
+export * from '@mannerly/errors/known-error';
 export * from '@mannerly/errors/MalformedPageError';
 export * from '@mannerly/errors/MovedError';
 export * from '@mannerly/errors/NotFoundError';

@@ -6,4 +6,6 @@ import { ScrapeError } from '@mannerly/errors/ScrapeError';
  *
  * Do not retry: stop, record the block (see `nextCooldown`) and come back later.
  */
-export class BlockedError extends ScrapeError {}
+export class BlockedError extends ScrapeError {
+  override readonly kind = 'blocked';
+}
