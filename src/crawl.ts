@@ -147,6 +147,26 @@ const crawlOne = async <P, S>({
   };
 };
 
+/**
+ * Reads page 1, 2, 3 and so on, parses each and stops when the list ends.
+ *
+ * It stops at `maxPages`, at an empty page, at a page identical to the previous one
+ * (a site that ignores the page number), or when `visit` returns `stop: true`.
+ * A failure on page 1 throws. A failure later ends the crawl and is returned in `failure`
+ * (unless `strict`, which throws). Check `complete` before treating the result as the whole list.
+ *
+ * @example
+ * const result = await crawlPages({
+ *   maxPages: 20,
+ *   strict: false,
+ *   logger,
+ *   urlFor: (page) => `https://example.org/events?page=${page}`,
+ *   fetchPage: (url) => http.get(url, { marker: 'id="event-list"' }),
+ *   parse: (body) => parseEvents(body),
+ *   itemsOf: (events) => events,
+ *   visit: ({ parsed }) => ({ stop: false, stats: { count: parsed.length } }),
+ * });
+ */
 export const crawlPages = async <P, S>(
   options: CrawlPagesOptions<P, S>,
 ): Promise<CrawlPagesResult<S>> => {

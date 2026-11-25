@@ -130,6 +130,10 @@ It stops at the cap, at an empty page, or at a page identical to the previous on
 
 mannerly makes a client polite; it does not make a request welcome. Identify yourself in the User-Agent, read the site's terms and `robots.txt`, and keep the interval long. A 403 is the site telling you to stop.
 
+## For AI agents
+
+`llms.txt` (shipped in the package) summarises the API, the errors and when each is thrown. Every option is documented in the types with its default. Contributors, human or not: see `AGENTS.md`.
+
 ## Development
 
 ```sh
